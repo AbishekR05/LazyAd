@@ -2,8 +2,8 @@
 
 | Milestone | Target | Status | Assigned GPU | Result Summary |
 | :--- | :--- | :--- | :--- | :--- |
-| **Spike S1** | Colab Runtime Diagnostic | ✅ **PASS** | Tesla T4 (14.56 GB) | GPU verified; OS: Ubuntu 24.04, Python 3.13, CUDA 13.0, PyTorch 2.11. FFmpeg present. |
-| **Spike S2** | Nano Banana Hero Image Generation | ❌ **BLOCKED (403)** | API (Cloud) | `gemini-3.1-flash-image` returned `403 PERMISSION_DENIED: Your project has been denied access`. |
+| **Spike S2 (Attempt 1)** | Nano Banana Hero Image Generation | ❌ **BLOCKED (403)** | API (Cloud) | `gemini-3.1-flash-image` returned `403 PERMISSION_DENIED: Your project has been denied access`. |
+| **Spike S2 (Current)** | User-Supplied Product Image Input | ⏳ *In Progress* | CPU / Colab | Validates user upload, aspect ratio, transparency, and stages `/content/lazyad_assets/product_input.png`. |
 | **Spike S3** | Baseline 3D Reconstruction (TripoSR) | ⏳ *Pending* | Tesla T4 | Single-image GLB generation with TripoSR. |
 | **Spike S4** | Headless Blender Programmatic Render | ⏳ *Pending* | Tesla T4 | Automated camera orbit and EEVEE frame capture. |
 | **Spike S5** | Audio Synthesis & Composition | ⏳ *Pending* | Tesla T4 | Kokoro-82M TTS + FFmpeg video/audio muxing. |
