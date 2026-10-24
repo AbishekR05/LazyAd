@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+
+# LazyAd generated assets (keep out of git; large binaries)
+output/
+frames/
+*.png
+*.jpg
+*.jpeg
+*.glb
+*.obj
+*.gltf
+*.wav
+*.mp3
+*.mp4
+
+# OS / Editor specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
