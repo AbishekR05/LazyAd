@@ -6,6 +6,7 @@
 | **Spike S2** | User-Supplied Product Image Input | ✅ **PASS** | CPU / Colab | Validated 2752x1536 RGBA PNG (5.89 MB) with alpha transparency. Staged at `/content/lazyad_assets/product_input.png`. |
 | **Spike S3** | Baseline 3D Reconstruction (TripoSR) | ⚠️ **TECHNICAL PASS / VISUAL REJECTION** | Tesla T4 (4.14 GB peak) | Valid GLB exported (53,571 verts, 6.05s recon). But output is a literal white ceramic brick/box with an embossed watch face. Inadequate for commercial video. |
 | **Spike S4** | Headless Blender Programmatic Render | ❌ **BENCHMARK FAIL (Latency & Architecture)** | Tesla T4 / CPU Fallback | All 90 frames rendered at 1080x1080, but took 6,285s (~104 min; 69.84s/frame) due to EGL GPU driver initialization failure falling back to CPU software rasterization. Also confirmed: stock 3D models cannot substitute user's uploaded product. |
+| **Spike S6** | 2.5D Depth-Parallax Rendering | ⏳ *In Progress* | Tesla T4 | Depth Anything V2 + displaced surface of authentic user product + Xvfb headless EEVEE preview. |
 | **Spike S5** | Audio Synthesis & Composition | ⏳ *Pending* | Tesla T4 | Kokoro-82M TTS + FFmpeg video/audio muxing. |
 
 ---
@@ -151,3 +152,19 @@ Managed to successfully fallback to surfaceless EGL rendering!
    - **Blender 2.5D Displaced Mesh:** The user's exact photograph is projected onto an alpha-masked subdivided plane displaced by the metric depth map.
    - **Cinematic Choreography:** Camera orbits $\pm 25^\circ$, dollies into the dial, and studio rim lights sweep across the geometry.
    - **Outcome:** 100% photorealistic preservation of the user's authentic product (typography, logos, gemstones), genuine 3D parallax, zero hallucination, zero white box, and sub-second hardware rendering per frame.
+
+---
+
+## Spike S6 Empirical Findings (In Progress)
+
+- **Specification Document:** `Docs/Phase 1, spike S6.md`
+- **Notebook Implementation:** `notebooks/S6_depth_parallax_render.ipynb`
+- **Objective:** Evaluate 2.5D depth-parallax rendering using the authentic user-supplied watch asset (`product_input.png`), Depth Anything V2 Small, and headless Blender EEVEE with Xvfb virtual frame buffer acceleration.
+- **Workflow Steps:**
+  1. Input Inspection: Verify 2752x1536 RGBA native alpha mask.
+  2. Relative Depth Map: Generate `product_depth.png` via `depth-anything/Depth-Anything-V2-Small-hf` with alpha ground-truth masking.
+  3. Blender Virtual Display Setup: Configure portable Blender 3.6 LTS with `xvfb-run -a` for GPU rasterization.
+  4. Scene Generation: Script 2.5D displaced plane ($1.7917:1$ aspect ratio, 0.08m relief) + PBR material + 3-point lighting.
+  5. Camera Choreography: 3 shots (Hero Movement, Dial Dolly-In, Parallax Arc Sweep) across 60 frames (720x720 @ 24 fps).
+  6. Visual Validation: Inspect keyframes for dial preservation, product authenticity, and lack of mesh warping.
+
