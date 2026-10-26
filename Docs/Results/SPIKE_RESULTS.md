@@ -193,24 +193,41 @@ Empirically test whether 2.5D metric/relative depth-parallax rendering using Dep
 | **1. Watch Authenticity** | **[YES]** | 100% faithful to the user's uploaded photograph. Zero AI hallucination. |
 | **2. Branding & Details** | **[YES]** | Emerald sunburst dial, gold bezel teeth, chronograph subdials, and leather stitching remain razor-sharp. |
 | **3. Hero Framing** | **[YES]** | Shot 1 captures the entire watch with breathing room; no cropped bezel or straps. |
-| **4. Depth Parallax** | **[YES]** | Noticeable 3D depth separation between dial, bezel, and strap as the camera dollies in and swings across in an arc. |
-| **5. Artifacts & Holes** | **[PARTIAL]** | Zero mesh holes or stretching on the watch body. However, a small white contact-shadow pedestal/puddle remains at the base of the strap due to color threshold inclusion. |
+| **4. Depth Parallax** | **[NEEDS WORK]** | While mathematically displaced in 3D, the motion path felt like a flat digital zoom due to insufficient angular displacement. |
+| **5. Artifacts & Holes** | **[FAIL]** | Two distinct mask defects: (a) floor contact-shadow extruded as a white pedestal, (b) background trapped between the band loop and case. |
 
-### 3. Acceptance Verdict
-- Criteria 1–4, 6–9: **PASS**
-- Criterion 5 (Render Latency Target $\le 2.0$s/frame): **FAIL (15.98s/frame)**.
-- **Verdict: ⚠️ VISUAL PASS / LATENCY REVIEW**
-- **Latency Analysis:** At 15.98s/frame, rendering is 4.4x faster than S4's 69.84s/frame, but `xvfb-run` still defaulted to Mesa software rasterization instead of direct hardware NVIDIA GLX offload. For the monolithic MVP, switching to Cycles GPU (native OptiX/CUDA device) will cut render times down to <0.5s/frame.
+### 3. User Review & Critical Visual Defects Identified
+During hands-on inspection of the S6 preview, two primary visual defects were identified by the user:
+1. **The "Flat 2D Zoom" Illusion:**
+   - *Observation:* The rendered keyframes looked like a simple camera zoom-in at a static angle rather than dynamic 3D camera choreography.
+   - *Root Cause:* The camera's lateral motion across the 60 frames was only $4\text{ cm}$ at a $1.0\text{m}$ distance—an angular variation of only $\sim 2.3^\circ$. Moving along the optical axis without transverse arc motion or dynamic lighting glints is optically indistinguishable from a 2D scale/crop in Premiere.
+2. **The "Trapped Background" & "White Floor Pedestal" Mask Defects:**
+   - *Observation:* Part of the cream studio background remained trapped near the watch band (inside the strap loop and around the buckle), and a white extrusion formed beneath the lower strap.
+   - *Root Cause:* Hand-crafted color-distance thresholding captured the dark floor contact shadow as part of the watch. To avoid dial reflections turning into transparent holes, contour filling (`cv2.FILLED`) was applied, which inadvertently filled the genuine background gaps between the curved strap and the watch case.
 
 ---
 
-## Spike S6.1 Empirical Findings (In Progress)
+### 4. Architectural Analysis: Is Single-Image-to-3D Mesh Generation Even Feasible?
+A core architectural question was evaluated: *Is it feasible to pivot to another 3D reconstruction model (such as InstantMesh, LGM, CRM, or Trellis)?*
+
+**Empirical & Theoretical Verdict: NO. Single-image-to-3D mesh generation is fundamentally unviable for commercial luxury advertising.**
+
+- **The Law of the "Missing 240°":** A single 2D photograph contains optical information for at most a $120^\circ$ hemisphere. The remaining $240^\circ$ (case profile, crown mechanism, caseback, deployant clasp) does not exist. Any 3D generative model must hallucinate that missing geometry.
+- **The Tolerance Problem:** While neural hallucination is acceptable for organic assets (rocks, plants, cartoon characters), commercial product advertising has **zero tolerance for brand distortion**. Single-image 3D models melt watch hands into blobby toothpicks, distort typography, weld the strap loop together with webbed mesh artifacts, and bake specular sapphire reflections into solid white geometry lumps.
+- **Strategic Decision:** 
+  - Full 3D mesh reconstruction from a single photo is **formally rejected** for commercial products.
+  - The winning path for brand fidelity is **2.5D Depth Parallax**: it guarantees 100% pixel-perfect preservation of the seller's authentic product while using estimated depth maps for front-facing commercial camera motion ($\pm 25^\circ$).
+
+---
+
+## Spike S6.1 Empirical Findings: Visual Refinement
 
 - **Specification Document:** `Docs/S6.1 Visual Refinement.md`
 - **Notebook Implementation:** `notebooks/S6_1_visual_refinement.ipynb`
-- **Objective:** Refine the 2.5D visual ad preview by:
-  1. Root-causing and eliminating the floor contact-shadow white artifact at the mask stage without eroding the genuine alligator leather strap or rose-gold buckle.
-  2. Replacing linear zoom with a **centered zoom-out reveal** anchored precisely on the **watch dial center**, opening on a macro close-up of the dial and smoothly pulling back (cubic easing) to reveal the complete watch with balanced negative space.
-  3. Benchmarking 72 frames (720x720 @ 24 fps, 3.0s) and embedding an interactive HTML5 video player for `s6_1_preview.mp4`.
+- **Objectives:**
+  1. **Neural Product Segmentation (`briaai/RMBG-1.4`):** Replace hand-tuned color thresholding with Bria AI's state-of-the-art e-commerce segmentation model in `transformers`. This cleanly cuts out the cream background trapped between the band and case, strips the floor shadow, and eliminates corner watermarks while preserving every stitch, lug, and buckle edge with zero Python 3.13 / NumPy conflicts.
+  2. **Centered Dial Zoom-Out Reveal:** Calculate the exact 2D and 3D centroid of the **watch dial** $(X_{dial}, 0, Z_{dial})$ as the camera visual anchor. Open tight on the dial and bezel ($Y = -0.42\text{m}$), smoothly pulling back (cubic easing) to reveal the complete watch with balanced negative space ($Y = -0.96\text{m}$).
+  3. **Dynamic Specular Lighting:** Animate the studio Key Light across the watch to sweep moving metallic glints across the gold casing and sapphire crystal, reinforcing physical 3D presence.
+  4. **Embedded Video Preview:** Embed an interactive HTML5 video player for `s6_1_preview.mp4` (72 frames, 3.0s @ 24 fps, 720x720) directly in Colab.
 
 
