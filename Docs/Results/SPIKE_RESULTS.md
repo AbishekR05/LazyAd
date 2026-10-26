@@ -7,6 +7,7 @@
 | **Spike S3** | Baseline 3D Reconstruction (TripoSR) | ⚠️ **TECHNICAL PASS / VISUAL REJECTION** | Tesla T4 (4.14 GB peak) | Valid GLB exported (53,571 verts, 6.05s recon). But output is a literal white ceramic brick/box with an embossed watch face. Inadequate for commercial video. |
 | **Spike S4** | Headless Blender Programmatic Render | ❌ **BENCHMARK FAIL (Latency & Architecture)** | Tesla T4 / CPU Fallback | All 90 frames rendered at 1080x1080, but took 6,285s (~104 min; 69.84s/frame) due to EGL GPU driver initialization failure falling back to CPU software rasterization. Also confirmed: stock 3D models cannot substitute user's uploaded product. |
 | **Spike S6** | 2.5D Depth-Parallax Rendering | ⚠️ **VISUAL PASS / LATENCY REVIEW** | Tesla T4 / Mesa Xvfb | 100% authentic product preserved. Crisp emerald dial, rose-gold case, and believable 3D parallax without white boxes. 60 frames rendered in 958.66s (15.98s/frame) via Xvfb software rasterizer; minor contact shadow puddle at base. |
+| **Spike S6.1** | Visual Refinement: Centered Zoom-Out | ⏳ *In Progress* | Tesla T4 | Contact shadow suppression + dial-centered zoom-out reveal (3.0s, 72 frames @ 24 fps). |
 | **Spike S5** | Audio Synthesis & Composition | ⏳ *Pending* | Tesla T4 | Kokoro-82M TTS + FFmpeg video/audio muxing. |
 
 ---
@@ -200,4 +201,16 @@ Empirically test whether 2.5D metric/relative depth-parallax rendering using Dep
 - Criterion 5 (Render Latency Target $\le 2.0$s/frame): **FAIL (15.98s/frame)**.
 - **Verdict: ⚠️ VISUAL PASS / LATENCY REVIEW**
 - **Latency Analysis:** At 15.98s/frame, rendering is 4.4x faster than S4's 69.84s/frame, but `xvfb-run` still defaulted to Mesa software rasterization instead of direct hardware NVIDIA GLX offload. For the monolithic MVP, switching to Cycles GPU (native OptiX/CUDA device) will cut render times down to <0.5s/frame.
+
+---
+
+## Spike S6.1 Empirical Findings (In Progress)
+
+- **Specification Document:** `Docs/S6.1 Visual Refinement.md`
+- **Notebook Implementation:** `notebooks/S6_1_visual_refinement.ipynb`
+- **Objective:** Refine the 2.5D visual ad preview by:
+  1. Root-causing and eliminating the floor contact-shadow white artifact at the mask stage without eroding the genuine alligator leather strap or rose-gold buckle.
+  2. Replacing linear zoom with a **centered zoom-out reveal** anchored precisely on the **watch dial center**, opening on a macro close-up of the dial and smoothly pulling back (cubic easing) to reveal the complete watch with balanced negative space.
+  3. Benchmarking 72 frames (720x720 @ 24 fps, 3.0s) and embedding an interactive HTML5 video player for `s6_1_preview.mp4`.
+
 
